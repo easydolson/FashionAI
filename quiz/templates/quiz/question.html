@@ -1,0 +1,43 @@
+{% extends 'quiz/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="quiz-container">
+    <div class="quiz-progress">
+        <div class="progress-bar">
+            <div class="progress-fill" style="width: {{ progress.percent }}%"></div>
+        </div>
+        <div class="progress-text">Вопрос {{ progress.current }} из {{ progress.total }}</div>
+    </div>
+
+    <div class="quiz-card">
+        <div class="quiz-category-tag">
+            {% if question.category.name == 'figure' %}Тип фигуры
+            {% elif question.category.name == 'color' %}Цветотип
+            {% else %}Типаж по Кибби
+            {% endif %}
+        </div>
+
+        <h2 class="quiz-question">{{ question.text }}</h2>
+
+        <form method="post" class="quiz-form">
+            {% csrf_token %}
+            <div class="options-grid">
+                {% for option in options %}
+                <label class="option-card">
+                    <input type="radio" name="answer" value="{{ option.value }}" required>
+                    <span class="option-text">{{ option.text }}</span>
+                </label>
+                {% endfor %}
+            </div>
+
+            <button type="submit" class="btn-next">
+                Далее
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M5 12h14M12 5l7 7-7 7"/>
+                </svg>
+            </button>
+        </form>
+    </div>
+</div>
+{% endblock %}

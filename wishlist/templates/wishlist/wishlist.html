@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container">
+    <h1>Избранные товары</h1>
+    {% if wishlist_items %}
+        <div class="products-grid">
+            {% for item in wishlist_items %}
+                <div class="product-card" data-product-id="{{ item.product.id }}">
+                    <img src="{{ item.product.image_url }}" alt="{{ item.product.name }}">
+                    <h3>{{ item.product.name }}</h3>
+                    <p>{{ item.product.price }} ₽</p>
+                    <button class="remove-from-wishlist" data-product-id="{{ item.product.id }}">Удалить</button>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p>У вас пока нет избранных товаров.</p>
+    {% endif %}
+</div>
+
+<script>
+    document.querySelectorAll('.remove-from-wishlist').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const productId = this.dataset.productId;
+            fetch('{% url "toggle_wishlist" %}', {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}',
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: new URLSearchParams({ product_id: productId })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (!data.is_in_wishlist) {
+                    this.closest('.product-card').remove();
+                }
+            });
+        });
+    });
+</script>
+{% endblock %}

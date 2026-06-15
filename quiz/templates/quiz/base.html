@@ -1,0 +1,19 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Стилист-опросник</title>
+    <meta charset="utf-8">
+    <link rel="stylesheet" href="{% static 'quiz/css/style.css' %}">
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; }
+        .progress { margin-bottom: 20px; background: #eee; padding: 5px; }
+        .question { font-size: 1.2em; margin-bottom: 20px; }
+        .options li { list-style: none; margin: 10px 0; }
+        button { margin-top: 20px; padding: 8px 16px; font-size: 1em; }
+    </style>
+</head>
+<body>
+    {% block content %}{% endblock %}
+</body>
+</html>

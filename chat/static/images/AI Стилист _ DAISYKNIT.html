@@ -1,0 +1,702 @@
+
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>AI Стилист | DAISYKNIT</title>
+    <link rel="stylesheet" href="/static/chat/css/chat.css">
+    <script type="text/javascript" src="http://gc.kis.v2.scr.kaspersky-labs.com/FD126C42-EBFA-4E12-B309-BB3FDD723AC1/main.js?attr=8XvaRawv4mlkC56PB_zHl-qGFzVz8UT_drDLddUs_zqVNiXmE111_j2fN9qLKQkR" charset="UTF-8"></script><style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background: #FFFFFF;
+            font-family: 'Montserrat', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            overflow: hidden;
+            height: 100vh;
+        }
+
+        /* Скрываем навигацию и футер */
+        nav, footer {
+            display: none !important;
+        }
+
+        /* Главный контейнер чата */
+        .chat-fullscreen {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            width: 100%;
+            background: #FFFFFF;
+            position: relative;
+        }
+
+        /* Центрированная плашка ввода (начальное состояние) */
+        .welcome-screen {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 100%;
+            max-width: 600px;
+            padding: 2rem;
+            text-align: center;
+            transition: all 0.3s ease;
+            z-index: 10;
+        }
+
+        .welcome-screen.hidden {
+            opacity: 0;
+            visibility: hidden;
+            transform: translate(-50%, -80%);
+        }
+
+        .welcome-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+        }
+
+        .welcome-title {
+            font-size: 2rem;
+            font-weight: 400;
+            color: var(--primary-color, #432E23);
+            margin-bottom: 0.5rem;
+        }
+
+        .welcome-subtitle {
+            font-size: 1rem;
+            color: var(--text-light, #6B6B6B);
+            margin-bottom: 2rem;
+        }
+
+        .welcome-input-wrapper {
+            max-width: 500px;  /* ← поле ввода по центру, но не шире 500px */
+            margin: 0 auto;
+            display: flex;
+            gap: 0.5rem;
+            background: #F5F5F5;
+            border-radius: 60px;
+            padding: 0.3rem;
+        }
+
+        .welcome-input {
+            flex: 1;
+            border: none;
+            background: transparent;
+            padding: 0.8rem 1.2rem;
+            font-size: 1rem;
+            outline: none;
+            font-family: inherit;
+        }
+
+        .welcome-btn {
+            background: var(--primary-color, #432E23);
+            color: white;
+            border: none;
+            padding: 0.8rem 1.8rem;
+            border-radius: 60px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: background 0.2s;
+        }
+
+        .welcome-btn:hover {
+            background: #5A3C2D;
+        }
+
+        /* Область сообщений (видна после отправки) */
+        .chat-messages-area {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        /* Нижняя панель ввода (появляется после первого сообщения) */
+        .chat-input-bar {
+            display: none;
+            padding: 1rem 1.5rem;
+            background: white;
+            border-top: 1px solid #E5E5E5;
+            gap: 0.8rem;
+        }
+
+        .chat-input-bar.visible {
+            display: flex;
+        }
+
+        .chat-input-bar textarea {
+            flex: 1;
+            border: 1px solid #E5E5E5;
+            border-radius: 30px;
+            padding: 0.8rem 1.2rem;
+            font-size: 0.9rem;
+            resize: none;
+            font-family: inherit;
+            outline: none;
+        }
+
+        .chat-input-bar textarea:focus {
+            border-color: var(--primary-color);
+        }
+
+        .chat-input-bar button {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 0 1.5rem;
+            border-radius: 30px;
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        /* Стили сообщений */
+        .message {
+            max-width: 80%;
+            padding: 0.8rem 1.2rem;
+            border-radius: 18px;
+            line-height: 1.4;
+            font-size: 0.9rem;
+        }
+
+        .message.user {
+            align-self: flex-end;
+            background: var(--primary-color);
+            color: white;
+            border-bottom-right-radius: 4px;
+        }
+
+        .message.assistant {
+            align-self: flex-start;
+            background: #F5F5F5;
+            color: var(--text-dark);
+            border-bottom-left-radius: 4px;
+        }
+
+        /* Карточки товаров */
+<!--        .products-grid {-->
+<!--            display: flex;-->
+<!--            gap: 1rem;-->
+<!--            margin-top: 1rem;-->
+<!--            flex-wrap: wrap;-->
+<!--        }-->
+
+        .product-card-chat {
+            width: 150px;
+            background: white;
+            border-radius: 12px;
+            padding: 0.8rem;
+            text-align: center;
+            text-decoration: none;
+            color: var(--text-dark);
+            border: 1px solid #E5E5E5;
+            transition: transform 0.2s;
+        }
+
+        .product-card-chat:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .product-card-chat img {
+            width: 100%;
+            height: auto;
+            border-radius: 8px;
+        }
+
+        .product-name {
+            font-size: 0.75rem;
+            font-weight: 500;
+            margin: 0.5rem 0 0.2rem;
+            display: block;
+        }
+
+        .product-price {
+            font-size: 0.8rem;
+            color: var(--primary-color);
+            font-weight: 600;
+        }
+
+        /* Индикатор печати */
+        .typing-indicator {
+            display: flex;
+            gap: 0.3rem;
+            padding: 0.6rem 1rem;
+        }
+
+        .typing-indicator span {
+            width: 6px;
+            height: 6px;
+            background: #999;
+            border-radius: 50%;
+            animation: typing 1.4s infinite;
+        }
+
+        /* Ограничение ширины всего контента */
+        .chat-fullscreen {
+            /*max-width: 1000px;*/
+            margin: 0 auto;
+            background: #FFFFFF;
+            box-shadow: 0 0 20px rgba(0,0,0,0.05);
+        }
+
+        /* Плашка ввода тоже центрируется */
+        .welcome-screen {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 100%;
+            max-width: none;  /* ← убираем ограничение */
+            padding: 2rem;
+            text-align: center;
+            z-index: 10;
+        }
+
+        /* Сообщения не растягиваются на всю ширину */
+        .message {
+            max-width: 70%;
+            min-width: 200px;
+        }
+
+        /* Область сообщений центрирована */
+        .chat-messages-area {
+            max-width: 900px;
+            margin: 0 auto;
+            width: 100%;
+            padding: 1.5rem;
+        }
+
+        /* Нижняя панель ввода */
+        .chat-input-bar {
+            max-width: 900px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        /* Общий контейнер */
+        .chat-fullscreen {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            width: 100%;
+            background: #FFFFFF;
+            position: relative;
+        }
+
+        /* Границы — только когда чат начался */
+        .chat-fullscreen.has-started {
+            max-width: 1000px;
+            margin: 0 auto;
+            box-shadow: 0 0 20px rgba(0,0,0,0.05);
+        }
+
+        .chat-fullscreen.has-started .chat-messages-area {
+            max-width: 900px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .chat-fullscreen.has-started .chat-input-bar {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        @keyframes typing {
+            0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
+            30% { transform: translateY(-6px); opacity: 1; }
+        }
+
+        .message.look-message {
+            max-width: 90% !important;
+            width: auto;
+            background: #FFFFFF;
+            border: 1px solid #E5E5E5;
+            padding: 16px;
+        }
+
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 12px;
+            margin-top: 0;
+        }
+
+        @media (min-width: 768px) {
+            .message.look-message {
+                max-width: 85% !important;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<script>
+    console.log('Скрипт загружен');
+    document.addEventListener('DOMContentLoaded', () => {
+        console.log('DOM загружен');
+        console.log('welcomeBtn:', document.getElementById('welcome-btn'));
+    });
+</script>
+
+<div class="chat-fullscreen">
+    <!-- Центрированная плашка ввода -->
+    <div class="welcome-screen" id="welcome-screen">
+        <div class="welcome-icon">
+            <img src="/static/images/d.jpg" alt="DAISYKNIT" style="width: 500px; height: auto;">
+        </div>
+        <div class="welcome-title">AI Стилист</div>
+        <div class="welcome-subtitle">
+            Расскажите, что вы ищете, и я помогу подобрать идеальный образ
+        </div>
+
+        <!-- Кнопка для опросника -->
+        <a href="/"
+           style="display: inline-block; margin-bottom: 1rem; padding: 0.6rem 1.5rem; background: var(--secondary-color, #E5D8C4); color: var(--primary-color); border-radius: 30px; text-decoration: none; font-weight: 500;">
+            ✨ Определить свой стиль
+        </a>
+
+        <div class="welcome-input-wrapper">
+            <input type="text" class="welcome-input" id="welcome-input" placeholder="Например: «лёгкое летнее платье»"
+                   autofocus>
+            <button class="welcome-btn" id="welcome-btn">Начать</button>
+        </div>
+    </div>
+
+    <!-- Область сообщений (изначально скрыта) -->
+    <div class="chat-messages-area" id="chat-messages" style="display: none;"></div>
+
+    <!-- Нижняя панель ввода -->
+    <div class="chat-input-bar" id="chat-input-bar">
+        <textarea id="message-input" placeholder="Напишите свой вопрос..." rows="1"></textarea>
+        <button id="clear-btn" style="background: #ccc; color: #333;">🗑️</button>
+        <button id="send-btn">Отправить</button>
+    </div>
+</div>
+
+<script>
+    const csrfToken = 'm3NYPetfrVVcQqBBkIf2j6Wv71Zy7d0QbVxF3jNETYvkTDTpjYT0mAMQ8mck2Jjk';
+
+    const welcomeScreen = document.getElementById('welcome-screen');
+    const welcomeInput = document.getElementById('welcome-input');
+    const welcomeBtn = document.getElementById('welcome-btn');
+    const messagesArea = document.getElementById('chat-messages');
+    const inputBar = document.getElementById('chat-input-bar');
+    const messageInput = document.getElementById('message-input');
+    const sendBtn = document.getElementById('send-btn');
+
+    let isFirstMessage = true;
+
+    // Показ бейджа с параметрами пользователя
+    function showUserBadge() {
+            if (document.querySelector('.user-badge-message')) return;
+
+            
+            const badgeHtml = `
+                <div class="message assistant" style="background: var(--secondary-color, #E5D8C4); margin-bottom: 1rem;">
+                    <div class="message-content">
+                        🎯 <strong>Ваши параметры учтены</strong><br>
+                        Фигура: Яблоко<br>
+                        Цветотип: Зима<br>
+                        Типаж Кибби: Гамин
+                    </div>
+                </div>
+            `;
+            messagesArea.insertAdjacentHTML('afterbegin', badgeHtml);
+            
+        }
+
+    // Отображение образа (главное фото + товары)
+    function addLookMessage(lookImage, products) {
+        const messageDiv = document.createElement('div');
+        messageDiv.className = 'message assistant look-message';
+        messageDiv.style.maxWidth = '100%';
+        messageDiv.style.width = '100%';
+
+        const imageUrl = getImageUrl(lookImage);
+
+        messageDiv.innerHTML = `
+            <div style="display: flex; gap: 24px; flex-wrap: wrap; align-items: flex-start;">
+                <div style="flex: 0 0 280px;">
+                    <img src="${imageUrl}" style="width: 100%; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); display: block;">
+                </div>
+                <div style="flex: 1; min-width: 260px;">
+<!--                    <div class="look-products-title" style="margin-bottom: 12px; font-weight: 500;">В образе:</div>-->
+                    ${createProductsGrid(products)}
+                </div>
+            </div>
+        `;
+
+        messagesArea.appendChild(messageDiv);
+        messagesArea.scrollTop = messagesArea.scrollHeight;
+    }
+
+
+    // Обычное сообщение
+<!--    function addMessage(role, content, products = null) {-->
+<!--        const messageDiv = document.createElement('div');-->
+<!--        messageDiv.className = `message ${role}`;-->
+<!--        let html = `<div class="message-content">${content.replace(/\n/g, '<br>')}</div>`;-->
+<!--        if (products && products.length > 0) {-->
+<!--            html += '<div class="products-grid">';-->
+<!--            for (const p of products) {-->
+<!--                html += `-->
+<!--                    <a href="${p.url || '#'}" class="product-card-chat" target="_blank">-->
+
+<!--                        ${p.image_filename ? (p.image_filename.startsWith('http') ? `<img src="${p.image_filename}" alt="${p.name}">` : `<img src="/media/first_images/${p.image_filename}" alt="${p.name}">`) : '<div style="height:120px;background:#F4F2EF;"></div>'}-->
+<!--                        <span class="product-name">${p.name}</span>-->
+<!--                        <span class="product-price">${p.price} ₽</span>-->
+<!--                    </a>-->
+<!--                `;-->
+<!--            }-->
+<!--            html += '</div>';-->
+<!--        }-->
+<!--        messageDiv.innerHTML = html;-->
+<!--        messagesArea.appendChild(messageDiv);-->
+<!--        messagesArea.scrollTop = messagesArea.scrollHeight;-->
+<!--    }-->
+
+    // 3. ГЛАВНАЯ ФУНКЦИЯ-ДИСПЕТЧЕР
+    function addMessage(role, content, products = null, messageType = 'text') {
+        const messageDiv = document.createElement('div');
+        messageDiv.className = `message ${role}`;
+
+        if (messageType === 'quiz_suggestion') {
+            messageDiv.innerHTML = `
+                <div class="message-content">${content.replace(/\n/g, '<br>')}</div>
+                <a href="/quiz/start/" class="quiz-suggestion-btn">✨ Пройти тест стиля</a>
+            `;
+        } else {
+            let html = `<div class="message-content">${content.replace(/\n/g, '<br>')}</div>`;
+            if (products && products.length > 0) {
+                html += createProductsGrid(products);
+            }
+            messageDiv.innerHTML = html;
+        }
+
+        messagesArea.appendChild(messageDiv);
+        messagesArea.scrollTop = messagesArea.scrollHeight;
+    }
+
+    // В обработчике ответа от сервера:
+    // const data = await response.json();
+    // addMessage('assistant', data.message, data.products, data.type);
+
+    // Индикатор набора
+    function showTyping() {
+        const typingDiv = document.createElement('div');
+        typingDiv.className = 'message assistant';
+        typingDiv.id = 'typing-indicator';
+        typingDiv.innerHTML = `<div class="typing-indicator"><span></span><span></span><span></span></div>`;
+        messagesArea.appendChild(typingDiv);
+        messagesArea.scrollTop = messagesArea.scrollHeight;
+    }
+
+    function hideTyping() {
+        const typing = document.getElementById('typing-indicator');
+        if (typing) typing.remove();
+    }
+
+
+    // Отправка сообщения
+    async function sendMessage(message, isFirst = false) {
+
+        console.log('sendMessage called', {isFirst, welcomeScreen: welcomeScreen?.id});
+
+        if (!message.trim()) return;
+
+        if (isFirst && welcomeScreen) {
+
+            console.log('sendMessage called', {isFirst, welcomeScreen: welcomeScreen?.id});
+
+            welcomeScreen.classList.add('hidden');
+            setTimeout(() => {
+                welcomeScreen.style.display = 'none';
+                messagesArea.style.display = 'flex';
+                inputBar.classList.add('visible');
+                document.querySelector('.chat-fullscreen').classList.add('has-started');
+
+                // ========== ПОКАЗАТЬ БЕЙДЖ ==========
+                // showUserBadge();
+                // ==================================
+
+                messagesArea.style.flexDirection = 'column';
+                document.getElementById('message-input').focus();
+            }, 300);
+        }
+
+        addMessage('user', message);
+        if (isFirst) {
+            welcomeInput.value = '';
+        } else {
+            messageInput.value = '';
+        }
+        showTyping();
+
+        try {
+            const response = await fetch('/chat/send/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken
+                },
+                body: JSON.stringify({ message: message })
+            });
+            const data = await response.json();
+            hideTyping();
+            addMessage('assistant', data.message, data.products, data.type);
+        } catch (error) {
+            hideTyping();
+            addMessage('assistant', 'Извините, произошла ошибка. Попробуйте позже.');
+        }
+    }
+
+
+    // Загрузка страницы: отображаем историю, активируем чат
+    window.addEventListener('DOMContentLoaded', function() {
+        // Если есть сообщения в БД (или тест только пройден) — переходим в режим чата
+        const hasMessages = 2 > 0;
+        const quizJustCompleted = true;
+
+        if (hasMessages || quizJustCompleted) {
+            if (welcomeScreen) welcomeScreen.style.display = 'none';
+            if (messagesArea) messagesArea.style.display = 'flex';
+            if (inputBar) inputBar.classList.add('visible');
+            document.querySelector('.chat-fullscreen').classList.add('has-started');
+
+            // Показываем бейдж (если параметры есть и он ещё не добавлен)
+            showUserBadge();
+
+            // Отображаем все сообщения из базы данных
+            
+                
+
+                    // Сначала показываем текст сообщения если есть
+                    
+                    addMessage('assistant', `🎉 Отлично! Я подобрал для вас товары, идеально подходящие под ваши параметры:`, null, 'text');
+                    
+
+                    // Показываем образы. Для образов: products_data хранит массив {look_image, products}
+                    
+                    addLookMessage('https://daisyknit.ru/upload/dev2fun.imagecompress/webp/iblock/af5/wosnm6uv29z2xcjfzeh7xsak9mwcmz1k/katya2.webp', [{'name': 'Джинсы-сигаретки', 'price': 12890.0, 'image_filename': 'https://daisyknit.ru/upload/dev2fun.imagecompress/webp/iblock/4f3/56xk8fa7r8f0kjy2nvoqbd8k5cizlk1f/Dzhinsy_sigaretki-Goluboy-968340_1.webp', 'url': 'https://daisyknit.ru/catalog/dzhinsy_i_denim/dzhinsy_sigaretki/?sku=115482'}, {'name': 'Рубашка с вышивкой из хлопка', 'price': 11890.0, 'image_filename': 'https://daisyknit.ru/upload/dev2fun.imagecompress/webp/iblock/489/p5pn2912p4sav9o026isjulmx51jq7lb/Rubashka-s-vyshivkoy-iz-khlopka-Belyy-970286_1.webp', 'url': 'https://daisyknit.ru/catalog/rubashki_i_bluzy/rubashka_s_vyshivkoy_iz_khlopka/?sku=115554'}, {'name': 'Жакет однобортный с вышивкой', 'price': 21890.0, 'image_filename': 'https://daisyknit.ru/upload/dev2fun.imagecompress/webp/iblock/5e7/q7q4b9b92w3bnercw617vf0kxdny0hwp/ZHaket-dvubortnyy-s-vyshivkoy-Rozovyy-968419_1.webp', 'url': 'https://daisyknit.ru/catalog/zhakety_i_zhilety/zhaket_odnobortnyy_s_vyshivkoy/?sku=115871 '}]);
+                    
+                    addLookMessage('https://daisyknit.ru/upload/dev2fun.imagecompress/webp/iblock/191/ckyprrxvm1rejk4hfn0bpht3ab5tu8r7/katya1.webp', [{'name': 'Джинсы-сигаретки', 'price': 12890.0, 'image_filename': 'https://daisyknit.ru/upload/dev2fun.imagecompress/webp/iblock/4f3/56xk8fa7r8f0kjy2nvoqbd8k5cizlk1f/Dzhinsy_sigaretki-Goluboy-968340_1.webp', 'url': 'https://daisyknit.ru/catalog/dzhinsy_i_denim/dzhinsy_sigaretki/?sku=115482'}, {'name': 'Рубашка с вышивкой из хлопка', 'price': 11890.0, 'image_filename': 'https://daisyknit.ru/upload/dev2fun.imagecompress/webp/iblock/489/p5pn2912p4sav9o026isjulmx51jq7lb/Rubashka-s-vyshivkoy-iz-khlopka-Belyy-970286_1.webp', 'url': 'https://daisyknit.ru/catalog/rubashki_i_bluzy/rubashka_s_vyshivkoy_iz_khlopka/?sku=115554'}, {'name': 'Солнцезащитные очки с поляризацией в прямоугольной оправе', 'price': 7890.0, 'image_filename': 'https://daisyknit.ru/upload/dev2fun.imagecompress/webp/iblock/117/2bt01w651hw2ysbq497762fmdgu6ce2o/Solntsezashchitnye-ochki-s-polyarizatsiey-v-pryamougolnoy-oprave-Korichnevyy-968467_2.webp', 'url': 'https://daisyknit.ru/catalog/sumki_i_aksessuary/solntsezashchitnye_ochki_s_polyarizatsiey_v_pryamougolnoy_oprave_1/?sku=115662'}, {'name': 'Жакет однобортный с вышивкой', 'price': 21890.0, 'image_filename': 'https://daisyknit.ru/upload/dev2fun.imagecompress/webp/iblock/5e7/q7q4b9b92w3bnercw617vf0kxdny0hwp/ZHaket-dvubortnyy-s-vyshivkoy-Rozovyy-968419_1.webp', 'url': 'https://daisyknit.ru/catalog/zhakety_i_zhilety/zhaket_odnobortnyy_s_vyshivkoy/?sku=115871 '}]);
+                    
+                    addLookMessage('https://daisyknit.ru/upload/dev2fun.imagecompress/webp/iblock/a41/pj8ee2jns7ds69nxg403g3qzhaa1cr70/altana.webp', [{'name': 'Брюки широкие со складками', 'price': 12890.0, 'image_filename': 'https://daisyknit.ru/upload/dev2fun.imagecompress/webp/iblock/287/503upx67ed3f1ygi15v23hallyt6szyz/Bryuki-shirokie-so-skladkami-Grafitovyy-970704_1.webp', 'url': 'https://daisyknit.ru/catalog/bryuki_i_shorty/bryuki_shirokie_so_skladkami_3/?sku=117270'}, {'name': 'Футболка двойная из трикотажа', 'price': 5890.0, 'image_filename': 'https://daisyknit.ru/upload/dev2fun.imagecompress/webp/iblock/fb5/50pv15z5bjoiyy9afmzyq2u6r9i2jaw6/Futbolka-dvoynaya-iz-trikotazha-Seryy-970603_1.webp', 'url': 'https://daisyknit.ru/catalog/futbolki_i_tonkiy_trikotazh/futbolka_dvoynaya_iz_trikotazha/?sku=117312'}, {'name': 'Ветровка с высоким воротником', 'price': 17890.0, 'image_filename': 'https://daisyknit.ru/upload/dev2fun.imagecompress/webp/iblock/1f3/spw6y2ea3ntfilsd1xkguudiaa4568yf/Vetrovka-s-vysokim-vorotnikom-Seryy-970553_1.webp', 'url': 'https://daisyknit.ru/catalog/verkhnyaya_odezhda_1/vetrovka_s_vysokim_vorotnikom/?sku=117341'}]);
+                    
+                    addLookMessage('https://daisyknit.ru/upload/dev2fun.imagecompress/webp/iblock/6a8/k2m1x958f3xmmdwxh51d8gk3bzrl7xg8/kristina-kolosova.webp', [{'name': 'Бомбер из фактурного хлопка', 'price': 22100.0, 'image_filename': 'https://daisyknit.ru/upload/dev2fun.imagecompress/webp/iblock/9ae/7a3ehlkde8o8prwst0oauuzwcxanobo5/Bomber-iz-fakturnogo-khlopka-Slivochnyy-960692_1.webp', 'url': 'https://daisyknit.ru/catalog/verkhnyaya_odezhda_1/bomber_iz_fakturnogo_khlopka/?sku=105466'}, {'name': 'Брюки без пояса', 'price': 13890.0, 'image_filename': 'https://daisyknit.ru/upload/dev2fun.imagecompress/webp/iblock/cd9/xibmivkq6gr2elzct2s5nndomaz5isa0/Bryuki-bez-poyasa-Seryy-969164_1.webp', 'url': 'https://daisyknit.ru/catalog/bryuki_i_shorty/bryuki_bez_poyasa/?sku=114827'}]);
+                    
+                    addLookMessage('https://daisyknit.ru/upload/dev2fun.imagecompress/webp/iblock/d9e/hqlh232pb8g44flo9oyapi78cfrhkafw/photo_2026_03_27_13_24_48.webp', [{'name': 'Юбка миди в бельевом стиле с цветочным принтом', 'price': 8890.0, 'image_filename': 'https://daisyknit.ru/upload/dev2fun.imagecompress/webp/iblock/131/1qb3xje1hdt1tw4q1er1p7ebjtv751t9/YUbka-midi-v-belevom-stile-s-tsvetochnym-printom-Bezhevyy-963343_1.webp', 'url': 'https://daisyknit.ru/catalog/yubki_1/yubka_midi_v_belevom_stile_s_tsvetochnym_printom/?sku=109589'}, {'name': 'Рубашка с вышивкой из хлопка', 'price': 11890.0, 'image_filename': 'https://daisyknit.ru/upload/dev2fun.imagecompress/webp/iblock/489/p5pn2912p4sav9o026isjulmx51jq7lb/Rubashka-s-vyshivkoy-iz-khlopka-Belyy-970286_1.webp', 'url': 'https://daisyknit.ru/catalog/rubashki_i_bluzy/rubashka_s_vyshivkoy_iz_khlopka/?sku=115554'}, {'name': 'Жакет однобортный с вышивкой', 'price': 21890.0, 'image_filename': 'https://daisyknit.ru/upload/dev2fun.imagecompress/webp/iblock/5e7/q7q4b9b92w3bnercw617vf0kxdny0hwp/ZHaket-dvubortnyy-s-vyshivkoy-Rozovyy-968419_1.webp', 'url': 'https://daisyknit.ru/catalog/zhakety_i_zhilety/zhaket_odnobortnyy_s_vyshivkoy/?sku=115871 '}]);
+                    
+                
+            
+                
+<!--                    addMessage('assistant', `Вот образы, которые вам подходят. Какой понравился больше?\u000A\u000AМогу дополнить его аксессуарами или найти похожие модели.`, None, 'text');-->
+                    addMessage('assistant', `Вот образы, которые вам подходят. Какой понравился больше?\u000A\u000AМогу дополнить его аксессуарами или найти похожие модели.`,
+                        null,
+                        'text'
+                    );
+                
+            
+
+            messagesArea.scrollTop = messagesArea.scrollHeight;
+            if (messageInput) messageInput.focus();
+        }
+    });
+
+
+    // ==========================================================================
+    // Обработчики событий
+    console.log('Привязываю обработчик к welcomeBtn');
+
+    welcomeBtn.addEventListener('click', () => {
+        console.log('welcomeBtn clicked');
+
+        const msg = welcomeInput.value.trim();
+        console.log('msg:', msg);
+
+        if (msg) sendMessage(msg, true);
+    });
+
+    welcomeInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            const msg = welcomeInput.value.trim();
+            if (msg) sendMessage(msg, true);
+        }
+    });
+
+    sendBtn.addEventListener('click', () => {
+        const msg = messageInput.value.trim();
+        if (msg) sendMessage(msg, false);
+    });
+
+    messageInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            const msg = messageInput.value.trim();
+            if (msg) sendMessage(msg, false);
+        }
+    });
+
+    document.getElementById('clear-btn').addEventListener('click', async () => {
+    if (confirm('Очистить всю историю чата?')) {
+        await fetch('/chat/clear/', { method: 'POST', headers: { 'X-CSRFToken': csrfToken } });
+        location.reload();
+    }
+    });
+
+
+    // ====================== ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ================================================
+    function getImageUrl(imageFilename) {
+        if (!imageFilename) return null;
+        if (imageFilename.startsWith('http')) return imageFilename;
+        return `/media/first_images/${imageFilename}`;
+    }
+
+    function formatPrice(price) {
+        return new Intl.NumberFormat('ru-RU').format(price) + ' ₽';
+    }
+
+    function createProductCard(product) {
+        const imageUrl = getImageUrl(product.image_filename);
+        return `
+            <a href="${product.url || '#'}" class="product-card-chat" target="_blank" rel="noopener noreferrer">
+                ${imageUrl ? `<img src="${imageUrl}" alt="${product.name}">` : '<div class="product-card-placeholder"></div>'}
+                <span class="product-name">${product.name}</span>
+                <span class="product-price">${formatPrice(product.price)}</span>
+            </a>
+        `;
+    }
+
+    function createProductsGrid(products) {
+        if (!products || products.length === 0) return '';
+        let html = '<div class="products-grid">';
+        for (const p of products) html += createProductCard(p);
+        html += '</div>';
+        return html;
+    }
+
+    function addQuizSuggestionMessage(content, quizUrl) {
+        const messageDiv = document.createElement('div');
+        messageDiv.className = 'message assistant';
+        messageDiv.innerHTML = `
+            <div class="message-content">${content.replace(/\n/g, '<br>')}</div>
+            <a href="${quizUrl}" class="quiz-suggestion-btn">✨ Пройти тест стиля</a>
+        `;
+        messagesArea.appendChild(messageDiv);
+        messagesArea.scrollTop = messagesArea.scrollHeight;
+    }
+    // =================================================================================
+
+</script>
+
+</body>
+</html>

@@ -1,0 +1,28 @@
+{% extends 'quiz/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="start-container">
+    <div class="start-card">
+        <h1>Подберите свой идеальный образ</h1>
+        <p>Пройдите короткий тест, и мы подберём для вас образы, которые подчеркнут вашу индивидуальность</p>
+
+        <div class="start-features">
+            <div class="feature">
+                <span class="feature-number">01</span>
+                <span>Тип фигуры</span>
+            </div>
+            <div class="feature">
+                <span class="feature-number">02</span>
+                <span>Цветотип</span>
+            </div>
+            <div class="feature">
+                <span class="feature-number">03</span>
+                <span>Типаж по Кибби</span>
+            </div>
+        </div>
+
+        <a href="{% url 'quiz_question' order=1 %}" class="btn-start">Начать тест</a>
+    </div>
+</div>
+{% endblock %}

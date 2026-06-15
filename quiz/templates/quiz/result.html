@@ -1,0 +1,62 @@
+{% extends 'quiz/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="results-container">
+    <div class="results-header">
+        <h1>Ваш идеальный образ</h1>
+        <p class="subtitle">Мы подобрали для вас несколько луков, которые подчеркнут вашу уникальность</p>
+        <div class="user-tags">
+            <span class="tag">{{ figure_type }}</span>
+            <span class="tag">{{ color_type }}</span>
+            <span class="tag">{{ kibbe_type }}</span>
+        </div>
+    </div>
+
+    {% if looks %}
+        <div class="looks-grid">
+            {% for look in looks %}
+            <div class="look-card">
+                <div class="look-photo">
+                    {% with first_photo=look.photos.all|first %}
+                        {% if first_photo %}
+                        <img src="{{ first_photo.photo_url }}" alt="{{ look.name }}">
+                        {% else %}
+                        <img src="{% static 'img/placeholder.jpg' %}" alt="Образ">
+                        {% endif %}
+                    {% endwith %}
+                </div>
+                <div class="look-info">
+                    <!--
+                    <h3>{{ look.name|default:"Готовый образ" }}</h3>-->
+                    <div class="products-list">
+                        {% for product in look.get_products %}
+                        <a href="{{ product.url }}" class="product-card" target="_blank">
+                            {% if product.image %}
+                            <img src="{{ product.image }}" alt="{{ product.name }}">
+                            {% else %}
+                            <div class="product-card-placeholder"></div>
+                            {% endif %}
+                            <div class="product-info">
+                                <span class="product-name">{{ product.name|truncatechars:35 }}</span>
+                                <span class="product-price">{{ product.price|floatformat:0 }} ₽</span>
+                            </div>
+                        </a>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="no-results">
+            <p>Скоро мы подберём для вас идеальные образы. А пока предлагаем посмотреть готовые луки в нашем разделе <a href="https://daisyknit.ru/obrazy/">Образы от стилистов</a>.</p>
+        </div>
+    {% endif %}
+
+    <div class="action-buttons">
+        <a href="{% url 'quiz_reset' %}" class="btn btn-outline">Пройти тест заново</a>
+        <a href="https://daisyknit.ru" class="btn btn-primary">Перейти в каталог</a>
+    </div>
+</div>
+{% endblock %}

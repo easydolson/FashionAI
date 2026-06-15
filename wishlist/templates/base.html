@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}DAISYKNIT{% endblock %}</title>
+</head>
+<body>
+    <nav>
+        <a href="/">Главная</a>
+        <a href="/chat/">Чат</a>
+        <a href="/wishlist/">Избранное</a>
+        {% if user.is_authenticated %}
+            <a href="/profile/">Профиль</a>
+            <a href="/logout/">Выйти</a>
+        {% else %}
+            <a href="/login/">Войти</a>
+        {% endif %}
+    </nav>
+
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+</body>
+</html>

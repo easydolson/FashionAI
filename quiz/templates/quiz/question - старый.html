@@ -1,0 +1,23 @@
+{% extends 'quiz/base.html' %}
+{% block content %}
+<div class="progress">
+    Вопрос {{ progress.done|add:1 }} из {{ progress.total }}
+</div>
+<div class="question">
+    {{ question.text }}
+</div>
+<form method="post">
+    {% csrf_token %}
+    <ul class="options">
+        {% for option in options %}
+        <li>
+            <label>
+                <input type="radio" name="answer" value="{{ option.value }}" required>
+                {{ option.text }}
+            </label>
+        </li>
+        {% endfor %}
+    </ul>
+    <button type="submit">Далее</button>
+</form>
+{% endblock %}
