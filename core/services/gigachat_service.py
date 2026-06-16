@@ -1,6 +1,7 @@
 import json
 import sys
 import io
+import os
 from typing import Any, Optional
 from dataclasses import dataclass
 from gigachat import GigaChat
@@ -20,7 +21,7 @@ class ToolResult:
 class GigaChatService:
     def __init__(self, search_service):
         self.client = GigaChat(
-            credentials="MDE5ZTUzY2MtZjEwOC03ZGY4LWIyMDUtNWE1YTg1YjNlYzZjOjgyMGE2ODdhLTQzY2ItNGMyYy1iM2MwLTEzYTQwMGI1YWVjYg==",
+            credentials=os.environ.get('GIGACHAT_API_KEY'),
             scope="GIGACHAT_API_PERS",
             model="GigaChat",
             verify_ssl_certs=False,
@@ -81,8 +82,10 @@ class GigaChatService:
             parameters=FunctionParameters(
                 type="object",
                 properties={
-                    "item_type": {"type": "string", "description": "Тип товара (сумка, обувь, аксессуар, юбка, брюки и т.д.)"},
-                    "replace_slot": {"type": "string", "description": "Какой слот заменяем: top, bottom, shoes, accessory (если замена)"},
+                    "item_type": {"type": "string",
+                                  "description": "Тип товара (сумка, обувь, аксессуар, юбка, брюки и т.д.)"},
+                    "replace_slot": {"type": "string",
+                                     "description": "Какой слот заменяем: top, bottom, shoes, accessory (если замена)"},
                     "outfit_id": {"type": "string", "description": "ID образа из истории (необязательно)"}
                 },
                 required=["item_type"]
@@ -363,8 +366,10 @@ class GigaChatService:
             if not result or not result.success:
                 return {"type": "message", "data": result.error if result else "Извините, не удалось выполнить запрос."}
 
-            messages.append(Messages(role=MessagesRole.ASSISTANT, content=choice.message.content or "", function_call=fc))
-            messages.append(Messages(role=MessagesRole.FUNCTION, content=json.dumps(result.data, ensure_ascii=False), name=fc.name))
+            messages.append(
+                Messages(role=MessagesRole.ASSISTANT, content=choice.message.content or "", function_call=fc))
+            messages.append(
+                Messages(role=MessagesRole.FUNCTION, content=json.dumps(result.data, ensure_ascii=False), name=fc.name))
 
             final_response = self.client.chat(Chat(messages=messages))
             final_text = final_response.choices[0].message.content
