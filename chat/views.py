@@ -35,9 +35,13 @@ def chat_page(request):
     print(f"DEBUG: quiz_products in session: {request.session.get('quiz_products')}")  # ← добавить
 
     user_data = {
-        'figure': request.session.get('figure_type'),
-        'color_type': request.session.get('color_type'),
-        'kibbe_type': request.session.get('kibbe_type'),
+        # 'figure': request.session.get('figure_type'),
+        # 'color_type': request.session.get('color_type'),
+        # 'kibbe_type': request.session.get('kibbe_type'),
+
+        'figure': session.figure_type,
+        'color_type': session.color_type,
+        'kibbe_type': session.kibbe_type,
     }
 
     # ========== Проверка новых образов ==========

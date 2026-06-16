@@ -57,7 +57,7 @@ class Look(models.Model):
         sku_list = [s.strip() for s in self.skus.split(',') if s.strip()]
         return Product.objects.filter(sku__in=sku_list)
 
-class LookPhoto(models.Model):
+class Look(models.Model):
     look = models.ForeignKey(Look, on_delete=models.CASCADE, related_name='photos')
     photo_url = models.URLField()
     order = models.PositiveSmallIntegerField(default=0)

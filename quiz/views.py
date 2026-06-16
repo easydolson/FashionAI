@@ -4,6 +4,8 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
 from django.contrib import messages
 from .models import Question, AnswerOption
+from chat.models import ChatSession
+
 
 from .models import Look
 
@@ -118,6 +120,19 @@ def quiz_result(request):
     # Перенаправляем в чат вместо страницы с результатами
     request.session['quiz_products'] = quiz_products
     request.session['quiz_completed'] = True
+
+    # ========== ВСТАВИТЬ СЮДА ==========
+    from chat.models import ChatSession
+    session_id = request.session.get('chat_session_id')
+    if session_id:
+        chat_session = ChatSession.objects.filter(session_id=session_id).first()
+        if chat_session:
+            chat_session.figure_type = figure_type
+            chat_session.color_type = color_type
+            chat_session.kibbe_type = kibbe_type
+            chat_session.save()
+    # ===================================
+
     return redirect('chat_page')
     # return render(request, 'quiz/result.html', context)
 
