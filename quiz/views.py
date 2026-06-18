@@ -129,6 +129,7 @@ def quiz_result(request):
             chat_session.color_type = color_type
             chat_session.kibbe_type = kibbe_type
             chat_session.quiz_products = quiz_products
+            chat_session.quiz_shown = False  # ← СБРАСЫВАЕМ ФЛАГ, ЧТОБЫ ПОКАЗАЛОСЬ
             chat_session.save()
     # ===================================
 

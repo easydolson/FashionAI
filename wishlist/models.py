@@ -1,7 +1,8 @@
 # wishlist/models.py
 from django.db import models
 from django.conf import settings
-from quiz.models import Product  # ваша модель товара
+from django.contrib.auth.models import User
+from quiz.models import Product  # модель товара
 
 
 class WishlistItem(models.Model):
@@ -27,3 +28,12 @@ class WishlistItem(models.Model):
 
     def __str__(self):
         return f"{self.user.username} – {self.product.name}"
+
+
+class Wishlist(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+    added_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('user', 'product')  # чтобы не дублировать

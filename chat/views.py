@@ -73,14 +73,18 @@ def chat_page(request):
         messages = session.messages.all().order_by('created_at')
     # ======================================================
 
-    quiz_completed = request.session.pop('quiz_completed', False)
+    # ========== УДАЛЯЕМ ВРЕМЕННЫЕ КЛЮЧИ ИЗ СЕССИИ ==========
+    request.session.pop('quiz_completed', False)
+    # ======================================================
+
+    # quiz_completed = request.session.pop('quiz_completed', False)
     # quiz_completed = request.GET.get('quiz_completed') == '1' or request.session.pop('quiz_completed', False)
 
     return render(request, 'chat/chat_page.html', {
         'messages': messages,
         'user_data': user_data,
         'quiz_products': quiz_products,
-        'quiz_completed': quiz_completed
+        'quiz_completed': False
     })
 
 

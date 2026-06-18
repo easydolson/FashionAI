@@ -1,8 +1,12 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.forms import UserCreationForm
-from django.contrib.auth import login
+from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
+from django.http import JsonResponse
+from wishlist.models import Wishlist
+from quiz.models import Product
+from chat.models import ChatSession
 
 
 def register(request):
@@ -23,8 +27,24 @@ def register(request):
 
 @login_required
 def profile_page(request):
-    return render(request, 'accounts/profile.html', {
-        'figure_type': request.session.get('figure_type'),
-        'color_type': request.session.get('color_type'),
-        'kibbe_type': request.session.get('kibbe_type'),
-    })
+    # Получаем последнюю сессию чата пользователя (с параметрами внешности)
+    last_session = ChatSession.objects.filter(user=request.user).last()
+
+    # Получаем избранные товары
+    wishlist = Wishlist.objects.filter(user=request.user).select_related('product')
+
+    context = {
+        'user': request.user,
+        'figure_type': last_session.figure_type if last_session else None,
+        'color_type': last_session.color_type if last_session else None,
+        'kibbe_type': last_session.kibbe_type if last_session else None,
+        'wishlist': wishlist,
+    }
+    return render(request, 'accounts/profile.html', context)
+
+
+@login_required
+def logout_view(request):
+    logout(request)
+    messages.info(request, 'Вы вышли из системы.')
+    return redirect('login')
