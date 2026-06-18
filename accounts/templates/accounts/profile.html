@@ -1,68 +1,34 @@
 {% extends 'base.html' %}
-
-{% block title %}Мой профиль | DAISYKNIT{% endblock %}
-
+{% block title %}Профиль{% endblock %}
 {% block content %}
-<div class="profile-container">
-    <h1>Мой профиль</h1>
+<h1>👤 Профиль</h1>
+<p><strong>Имя пользователя:</strong> {{ user.username }}</p>
+<p><strong>Email:</strong> {{ user.email }}</p>
+<hr>
+<h3>📊 Параметры внешности</h3>
+<p><strong>Фигура:</strong> {{ figure|default:"Не определена (пройдите опрос)" }}</p>
+<p><strong>Цветотип:</strong> {{ color|default:"Не определён" }}</p>
+<p><strong>Типаж Кибби:</strong> {{ kibbe|default:"Не определён" }}</p>
 
-    <div class="profile-info">
-        <h3>Личная информация</h3>
-        <p><strong>Имя пользователя:</strong> {{ user.username }}</p>
-        <p><strong>Email:</strong> {{ user.email|default:"Не указан" }}</p>
-        <p><strong>Имя:</strong> {{ user.first_name|default:"Не указано" }}</p>
-        <p><strong>Фамилия:</strong> {{ user.last_name|default:"Не указана" }}</p>
-        <p><strong>Дата регистрации:</strong> {{ user.date_joined|date:"d.m.Y" }}</p>
-    </div>
+<hr>
+<h3>❤️ Избранное</h3>
+{% if wishlist %}
+    <ul>
+    {% for item in wishlist %}
+        <li>
+            {% if item.product %}
+                {{ item.product.name }} —
+                <a href="{% url 'wishlist:remove_from_wishlist' item.id %}" style="color: red;">Удалить</a>
+            {% elif item.look %}
+                Образ #{{ item.look.id }} —
+                <a href="{% url 'wishlist:remove_from_wishlist' item.id %}" style="color: red;">Удалить</a>
+            {% endif %}
+        </li>
+    {% endfor %}
+    </ul>
+{% else %}
+    <p>Избранного пока нет</p>
+{% endif %}
 
-    <div class="profile-params">
-        <h3>Ваши параметры стиля</h3>
-        {% if figure_type %}
-            <p><strong>Тип фигуры:</strong> {{ figure_type }}</p>
-            <p><strong>Цветотип:</strong> {{ color_type }}</p>
-            <p><strong>Типаж Кибби:</strong> {{ kibbe_type }}</p>
-            <a href="{% url 'start_quiz' %}" class="btn">Пройти тест заново</a>
-        {% else %}
-            <p>Вы ещё не прошли тест стиля.</p>
-            <a href="{% url 'start_quiz' %}" class="btn">Пройти тест</a>
-        {% endif %}
-    </div>
-
-    <div class="profile-actions">
-        <h3>Действия</h3>
-        <a href="{% url 'wishlist_page' %}" class="btn">Мои избранные товары</a>
-        <a href="{% url 'password_change' %}" class="btn">Сменить пароль</a>
-    </div>
-</div>
-
-<style>
-    .profile-container {
-        max-width: 600px;
-        margin: 0 auto;
-    }
-    .profile-info, .profile-params, .profile-actions {
-        background: white;
-        border-radius: 12px;
-        padding: 20px;
-        margin-bottom: 20px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    }
-    h1 {
-        margin-bottom: 20px;
-        color: #2c3e50;
-    }
-    h3 {
-        margin-bottom: 15px;
-        color: #2c3e50;
-        border-bottom: 1px solid #eee;
-        padding-bottom: 8px;
-    }
-    p {
-        margin: 8px 0;
-    }
-    .btn {
-        margin-top: 10px;
-        margin-right: 10px;
-    }
-</style>
+<p><a href="{% url 'chat_page' %}">← Вернуться в чат</a></p>
 {% endblock %}

@@ -8,6 +8,8 @@ from django.views.decorators.http import require_http_methods
 from .models import ChatSession, ChatMessage
 from core.services.search_service import SearchService
 from core.services.gigachat_service import GigaChatService
+from wishlist.models import WishlistItem
+
 
 search_service = SearchService()
 giga_service = GigaChatService(search_service=search_service)
@@ -80,11 +82,19 @@ def chat_page(request):
     # quiz_completed = request.session.pop('quiz_completed', False)
     # quiz_completed = request.GET.get('quiz_completed') == '1' or request.session.pop('quiz_completed', False)
 
+    wishlist_skus = []
+    if request.user.is_authenticated:
+        wishlist_skus = WishlistItem.objects.filter(
+            user=request.user,
+            product__isnull=False
+        ).values_list('product__sku', flat=True)
+
     return render(request, 'chat/chat_page.html', {
         'messages': messages,
         'user_data': user_data,
         'quiz_products': quiz_products,
-        'quiz_completed': False
+        'quiz_completed': False,
+        'wishlist_skus': list(wishlist_skus)
     })
 
 

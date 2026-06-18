@@ -232,6 +232,20 @@
             text-align: center;
         }
 
+        .product-card-wrapper {
+            position: relative;
+        }
+
+        .product-card-wrapper .wishlist-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            z-index: 10;
+        }
+        .product-card-wrapper:hover .wishlist-btn {
+            opacity: 1 !important;
+        }
+
         /* Индикатор печати */
         .typing-indicator {
             display: flex;
@@ -494,11 +508,6 @@
             <div style="display: flex; gap: 24px; flex-wrap: wrap; align-items: flex-start; position: relative;">
                 <div style="flex: 0 0 280px; position: relative;">
                     <img src="${imageUrl}" style="width: 100%; border-radius: 12px;">
-                    <button onclick="addLookToWishlist('${lookId}')"
-                            class="wishlist-btn look-wishlist-btn"
-                            style="position: absolute; top: 10px; right: 10px; background: rgba(255,255,255,0.8); border: none; border-radius: 50%; width: 36px; height: 36px; font-size: 18px; cursor: pointer;">
-                        ♡
-                    </button>
                 </div>
                 <div style="flex: 1;">${createProductsGrid(products)}</div>
             </div>
@@ -698,6 +707,7 @@
             messagesArea.scrollTop = messagesArea.scrollHeight;
             if (messageInput) messageInput.focus();
         }
+        loadWishlistStatus();
     });
 
 
@@ -753,13 +763,34 @@
         return new Intl.NumberFormat('ru-RU').format(price) + ' ₽';
     }
 
+
+<!--    function createProductCard(product) {-->
+<!--        const imageUrl = getImageUrl(product.image_filename);-->
+<!--        return `-->
+<!--            <div class="product-card-wrapper" style="position: relative;">-->
+<!--                <button onclick="addToWishlist('${product.sku}', this)"-->
+<!--                        class="wishlist-btn"-->
+<!--                        style="position: absolute; top: 10px; right: 10px; z-index: 10; background: rgba(255,255,255,0.9); border: none; border-radius: 50%; width: 36px; height: 36px; font-size: 18px; cursor: pointer; transition: 0.2s; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">-->
+<!--                    ♡-->
+<!--                </button>-->
+<!--                <a href="${product.url || '#'}" class="product-card-chat" target="_blank">-->
+<!--                    ${imageUrl ? `<img src="${imageUrl}" alt="${product.name}">` : ''}-->
+<!--                    <span class="product-name">${product.name}</span>-->
+<!--                    <span class="product-price">${formatPrice(product.price)}</span>-->
+<!--                </a>-->
+<!--            </div>-->
+<!--        `;-->
+<!--    }-->
+<!--    -->
+
     function createProductCard(product) {
         const imageUrl = getImageUrl(product.image_filename);
         return `
             <div class="product-card-wrapper" style="position: relative;">
-                <button onclick="addToWishlist('${product.sku}')"
+                <button data-sku="${product.sku}"
+                        onclick="addToWishlist('${product.sku}', this)"
                         class="wishlist-btn"
-                        style="position: absolute; top: 10px; right: 10px; background: rgba(255,255,255,0.8); border: none; border-radius: 50%; width: 36px; height: 36px; font-size: 18px; cursor: pointer; transition: 0.2s;">
+                        style="position: absolute; top: 10px; right: 10px; z-index: 10; background: rgba(255,255,255,0.9); border: none; border-radius: 50%; width: 36px; height: 36px; font-size: 18px; cursor: pointer; transition: 0.2s; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
                     ♡
                 </button>
                 <a href="${product.url || '#'}" class="product-card-chat" target="_blank">
@@ -769,6 +800,57 @@
                 </a>
             </div>
         `;
+    }
+
+    function addToWishlist(productId, buttonElement) {
+        fetch('/wishlist/toggle/', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrfToken,
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: new URLSearchParams({ product_id: productId })
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (data.is_in_wishlist) {
+                buttonElement.textContent = '♥';
+                buttonElement.style.background = '#ff6b6b';
+                buttonElement.style.color = 'white';
+                buttonElement.classList.add('active');
+            } else {
+                buttonElement.textContent = '♡';
+                buttonElement.style.background = 'rgba(255,255,255,0.9)';
+                buttonElement.style.color = '#333';
+                buttonElement.classList.remove('active');
+            }
+        })
+        .catch(error => console.error('Ошибка:', error));
+    }
+
+    function loadWishlistStatus() {
+        fetch('/wishlist/get-status/', {
+            method: 'GET',
+            headers: {
+                'X-CSRFToken': csrfToken,
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(r => r.json())
+        .then(data => {
+            const wishlistSkus = data.wishlist_skus || [];
+            // Находим все кнопки и красим нужные
+            document.querySelectorAll('.wishlist-btn').forEach(btn => {
+                const sku = btn.dataset.sku;
+                if (wishlistSkus.includes(sku)) {
+                    btn.textContent = '♥';
+                    btn.style.background = '#ff6b6b';
+                    btn.style.color = 'white';
+                    btn.classList.add('active');
+                }
+            });
+        })
+        .catch(error => console.error('Ошибка загрузки избранного:', error));
     }
 
     function createProductsGrid(products) {

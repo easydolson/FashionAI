@@ -125,3 +125,7 @@ CSRF_TRUSTED_ORIGINS = [
     'https://fashionai-production-e793.up.railway.app',
     'https://*.railway.app',  # разрешить все поддомены railway
 ]
+
+LOGIN_URL = '/accounts/login/'
+LOGIN_REDIRECT_URL = '/chat/'
+LOGOUT_REDIRECT_URL = '/chat/'

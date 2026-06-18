@@ -21,6 +21,7 @@ from django.conf.urls.static import static
 import accounts.views as accounts_views
 
 urlpatterns = [
+                path('accounts/', include('accounts.urls')),
                   path('admin/', admin.site.urls),
                   path('', include('quiz.urls')),
                   path('chat/', include('chat.urls')),
