@@ -1,1 +1,1 @@
-web: ./railway_start.sh
+web: python manage.py migrate --verbosity 2 && python manage.py collectstatic --noinput && gunicorn core.wsgi:application
