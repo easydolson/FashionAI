@@ -1,34 +1,196 @@
-{% extends 'base.html' %}
-{% block title %}Профиль{% endblock %}
-{% block content %}
-<h1>👤 Профиль</h1>
-<p><strong>Имя пользователя:</strong> {{ user.username }}</p>
-<p><strong>Email:</strong> {{ user.email }}</p>
-<hr>
-<h3>📊 Параметры внешности</h3>
-<p><strong>Фигура:</strong> {{ figure|default:"Не определена (пройдите опрос)" }}</p>
-<p><strong>Цветотип:</strong> {{ color|default:"Не определён" }}</p>
-<p><strong>Типаж Кибби:</strong> {{ kibbe|default:"Не определён" }}</p>
+{% load static %}
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Профиль | DAISYKNIT</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background: #FFFFFF;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #FFFFFF;
+            border-radius: 24px;
+            padding: 40px 32px;
+            box-shadow: 0 8px 40px rgba(0,0,0,0.06);
+            border: 1px solid #F0EDEA;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 32px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid #F0EDEA;
+        }
+        .header h1 {
+            font-weight: 400;
+            font-size: 24px;
+            color: #432E23;
+        }
+        .header-actions {
+            display: flex;
+            gap: 12px;
+        }
+        .header-actions a {
+            padding: 8px 16px;
+            border-radius: 20px;
+            text-decoration: none;
+            font-size: 14px;
+            transition: 0.2s;
+        }
+        .btn-chat {
+            background: #432E23;
+            color: white;
+        }
+        .btn-chat:hover { background: #5A3C2D; }
+        .btn-logout {
+            background: #F5F5F5;
+            color: #333;
+        }
+        .btn-logout:hover { background: #E0E0E0; }
+        .section {
+            margin-bottom: 24px;
+        }
+        .section-title {
+            font-size: 16px;
+            font-weight: 500;
+            color: #432E23;
+            margin-bottom: 12px;
+            letter-spacing: 0.3px;
+        }
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+        .info-item {
+            background: #FAFAFA;
+            padding: 14px 18px;
+            border-radius: 12px;
+        }
+        .info-item .label {
+            font-size: 12px;
+            color: #999;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+        .info-item .value {
+            font-size: 16px;
+            color: #2C2C2C;
+            margin-top: 4px;
+            font-weight: 500;
+        }
+        .wishlist-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 12px;
+        }
+        .wishlist-item {
+            background: #FAFAFA;
+            padding: 12px 16px;
+            border-radius: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .wishlist-item .name {
+            font-size: 14px;
+            color: #2C2C2C;
+        }
+        .wishlist-item .remove {
+            color: #D32F2F;
+            text-decoration: none;
+            font-size: 18px;
+        }
+        .wishlist-item .remove:hover { color: #B71C1C; }
+        .empty-state {
+            color: #999;
+            text-align: center;
+            padding: 24px 0;
+            font-size: 14px;
+        }
+        @media (max-width: 600px) {
+            .info-grid { grid-template-columns: 1fr; }
+            .header { flex-direction: column; gap: 12px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>👤 Профиль</h1>
+            <div class="header-actions">
+                <a href="{% url 'chat_page' %}" class="btn-chat">💬 Чат</a>
+                <a href="{% url 'logout' %}" class="btn-logout">Выйти</a>
+            </div>
+        </div>
 
-<hr>
-<h3>❤️ Избранное</h3>
-{% if wishlist %}
-    <ul>
-    {% for item in wishlist %}
-        <li>
-            {% if item.product %}
-                {{ item.product.name }} —
-                <a href="{% url 'wishlist:remove_from_wishlist' item.id %}" style="color: red;">Удалить</a>
-            {% elif item.look %}
-                Образ #{{ item.look.id }} —
-                <a href="{% url 'wishlist:remove_from_wishlist' item.id %}" style="color: red;">Удалить</a>
+        <div class="section">
+            <div class="section-title">Основная информация</div>
+            <div class="info-grid">
+                <div class="info-item">
+                    <div class="label">Имя пользователя</div>
+                    <div class="value">{{ user.username }}</div>
+                </div>
+                <div class="info-item">
+                    <div class="label">Email</div>
+                    <div class="value">{{ user.email }}</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <div class="section-title">🎯 Параметры внешности</div>
+            <div class="info-grid">
+                <div class="info-item">
+                    <div class="label">Тип фигуры</div>
+                    <div class="value">{{ figure|default:"Не определён" }}</div>
+                </div>
+                <div class="info-item">
+                    <div class="label">Цветотип</div>
+                    <div class="value">{{ color|default:"Не определён" }}</div>
+                </div>
+                <div class="info-item">
+                    <div class="label">Типаж Кибби</div>
+                    <div class="value">{{ kibbe|default:"Не определён" }}</div>
+                </div>
+            </div>
+            {% if not figure %}
+                <div style="margin-top: 12px; text-align: center;">
+                    <a href="{% url 'start_quiz' %}" style="color: #432E23; text-decoration: none; font-size: 14px; border: 1px solid #432E23; padding: 8px 20px; border-radius: 30px; display: inline-block;">
+                        ✨ Пройти опрос
+                    </a>
+                </div>
             {% endif %}
-        </li>
-    {% endfor %}
-    </ul>
-{% else %}
-    <p>Избранного пока нет</p>
-{% endif %}
+        </div>
 
-<p><a href="{% url 'chat_page' %}">← Вернуться в чат</a></p>
-{% endblock %}
+        <div class="section">
+            <div class="section-title">❤️ Избранное</div>
+            {% if wishlist %}
+                <div class="wishlist-grid">
+                    {% for item in wishlist %}
+                        <div class="wishlist-item">
+                            {% if item.product %}
+                                <span class="name">{{ item.product.name }}</span>
+                            {% elif item.look %}
+                                <span class="name">Образ #{{ item.look.id }}</span>
+                            {% endif %}
+                            <a href="{% url 'wishlist:remove_from_wishlist' item.id %}" class="remove">✕</a>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="empty-state">У вас пока нет избранных товаров или образов</div>
+            {% endif %}
+        </div>
+    </div>
+</body>
+</html>

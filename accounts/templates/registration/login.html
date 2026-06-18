@@ -1,11 +1,150 @@
-{% extends 'base.html' %}
-{% block title %}Вход{% endblock %}
-{% block content %}
-<h2>Вход</h2>
-<form method="post">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit" style="background: #432E23; color: white; border: none; padding: 10px 20px; border-radius: 30px; cursor: pointer;">Войти</button>
-</form>
-<p>Нет аккаунта? <a href="{% url 'register' %}">Зарегистрироваться</a></p>
-{% endblock %}
+{% load static %}
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Вход | DAISYKNIT</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background: #FFFFFF;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        .container {
+            max-width: 440px;
+            width: 100%;
+            background: #FFFFFF;
+            border-radius: 24px;
+            padding: 40px 32px;
+            box-shadow: 0 8px 40px rgba(0,0,0,0.06);
+            border: 1px solid #F0EDEA;
+        }
+        .logo {
+            text-align: center;
+            margin-bottom: 32px;
+        }
+        .logo h1 {
+            font-weight: 400;
+            font-size: 24px;
+            color: #432E23;
+            letter-spacing: 0.5px;
+        }
+        .logo p {
+            color: #6B6B6B;
+            font-size: 14px;
+            margin-top: 6px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-group label {
+            display: block;
+            font-size: 13px;
+            font-weight: 500;
+            color: #432E23;
+            margin-bottom: 6px;
+        }
+        .form-group input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid #E5E5E5;
+            border-radius: 12px;
+            font-size: 15px;
+            outline: none;
+            transition: border 0.2s;
+            background: #FAFAFA;
+        }
+        .form-group input:focus {
+            border-color: #432E23;
+            background: #FFFFFF;
+        }
+        .btn {
+            width: 100%;
+            padding: 14px;
+            background: #432E23;
+            color: white;
+            border: none;
+            border-radius: 30px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.2s;
+            margin-top: 8px;
+        }
+        .btn:hover { background: #5A3C2D; }
+        .footer-text {
+            text-align: center;
+            font-size: 14px;
+            color: #6B6B6B;
+            margin-top: 20px;
+        }
+        .footer-text a {
+            color: #432E23;
+            text-decoration: none;
+            font-weight: 500;
+        }
+        .footer-text a:hover { text-decoration: underline; }
+        .errorlist {
+            color: #D32F2F;
+            font-size: 13px;
+            list-style: none;
+            margin-top: 4px;
+        }
+        .messages {
+            padding: 12px 16px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+        .messages.success { background: #E8F5E9; color: #2E7D32; }
+        .messages.error { background: #FFEBEE; color: #C62828; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="logo">
+            <h1>✨ DAISYKNIT</h1>
+            <p>Войдите в аккаунт</p>
+        </div>
+
+        {{ form.non_field_errors }}
+
+        {% if messages %}
+            {% for message in messages %}
+                <div class="messages {{ message.tags }}">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+
+        {% if form.errors %}
+            <div style="color: red;">Неверный логин или пароль</div>
+        {% endif %}
+
+        <form method="post">
+            {% csrf_token %}
+            {% for field in form %}
+                <div class="form-group">
+                    <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    {{ field }}
+                    {% for error in field.errors %}
+                        <div class="errorlist">{{ error }}</div>
+                    {% endfor %}
+                </div>
+            {% endfor %}
+            <button type="submit" class="btn">Войти</button>
+        </form>
+
+        <div class="footer-text">
+            Нет аккаунта? <a href="{% url 'register' %}">Зарегистрироваться</a>
+        </div>
+        <div class="footer-text" style="margin-top: 8px;">
+            <a href="{% url 'chat_page' %}">← Вернуться в чат</a>
+        </div>
+    </div>
+</body>
+</html>

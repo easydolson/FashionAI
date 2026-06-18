@@ -1,4 +1,6 @@
 from django.db import models
+from django.contrib.auth.models import User
+
 
 # class ChatSession(models.Model):
 #     session_id = models.CharField(max_length=100, unique=True)
@@ -21,6 +23,7 @@ class ChatSession(models.Model):
     quiz_products = models.JSONField(null=True, blank=True)
     quiz_shown = models.BooleanField(default=False)
 
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
 
 class ChatMessage(models.Model):
     session = models.ForeignKey(ChatSession, on_delete=models.CASCADE, related_name='messages')

@@ -3,9 +3,9 @@ from django.contrib.auth.models import User
 from quiz.models import Product, Look
 
 class WishlistItem(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='wishlist_items')
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
     product = models.ForeignKey(Product, on_delete=models.CASCADE, null=True, blank=True)
-    look = models.ForeignKey(Look, on_delete=models.CASCADE, null=True, blank=True)
+    look = models.ForeignKey(Look, on_delete=models.CASCADE, null=True, blank=True)  # ← должно быть
     added_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
