@@ -115,7 +115,7 @@
 <body>
     <div class="container">
         <div class="logo">
-            <h1>✨ DAISYKNIT</h1>
+            <h1>DAISYKNIT</h1>
             <p>Создайте аккаунт</p>
         </div>
 
@@ -131,8 +131,8 @@
                 <div class="form-group">
                     <label for="{{ field.id_for_label }}">{{ field.label }}</label>
                     {{ field }}
-                    {% if field.help_text %}
-                        <span class="helptext">{{ field.help_text|safe }}</span>
+<!--                    {% if field.help_text %}-->
+<!--                        <span class="helptext">{{ field.help_text|safe }}</span>-->
                     {% endif %}
                     {% for error in field.errors %}
                         <div class="errorlist">{{ error }}</div>
