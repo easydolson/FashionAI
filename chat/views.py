@@ -31,8 +31,8 @@ def chat_page(request):
     messages = session.messages.all().order_by('created_at')
     # ======================================================
 
-    print(f"DEBUG: figure_type in session: {request.session.get('figure_type')}")  # ← добавить
-    print(f"DEBUG: quiz_products in session: {request.session.get('quiz_products')}")  # ← добавить
+    # print(f"DEBUG: figure_type in session: {request.session.get('figure_type')}")  # ← добавить
+    # print(f"DEBUG: quiz_products in session: {request.session.get('quiz_products')}")  # ← добавить
 
     user_data = {
         # 'figure': request.session.get('figure_type'),
@@ -45,8 +45,10 @@ def chat_page(request):
     }
 
     # ========== Проверка новых образов ==========
-    quiz_products = request.session.pop('quiz_products', None)
-    if quiz_products and not messages:
+    # quiz_products = request.session.pop('quiz_products', None)
+    quiz_products = session.quiz_products
+    # Добавляем флаг, что образы уже показаны
+    if quiz_products and not session.quiz_shown:
         # Сообщение с образами
         ChatMessage.objects.create(
             session=session,
@@ -64,6 +66,9 @@ def chat_page(request):
             products_data=None,
             message_type='text'
         )
+
+        session.quiz_shown = True  # помечаем, что показали
+        session.save()
 
         messages = session.messages.all().order_by('created_at')
     # ======================================================
@@ -152,7 +157,7 @@ def chat_send(request):
             else:
                 # Если дошли до конца — начинаем с начала, но с диверсификацией
                 # Применяем MMR для разнообразия
-                results = search_service.diversify_results(results, query, search_service.model, lambda_param=0.7)
+                # results = search_service.diversify_results(results, query, search_service.model, lambda_param=0.7)
                 results = results.head(5)
                 request.session['last_search_offset'] = 0
 
@@ -170,10 +175,23 @@ def chat_send(request):
                     'category': str(row.get('category', ''))
                 })
 
+            response_message = 'Вот другие варианты:' if new_offset > 5 else 'Вот ещё варианты:'
+            message_type = 'products'
+
+            # ========== СОХРАНЯЕМ СООБЩЕНИЕ ==========
+            ChatMessage.objects.create(
+                session=session,
+                role='assistant',
+                content=response_message,  # текст ответа
+                products_data=products,  # список товаров
+                message_type=message_type  # или 'outfit'
+            )
+            # ========================================
+
             return JsonResponse({
-                'message': 'Вот другие варианты:' if new_offset > 5 else 'Вот ещё варианты:',
+                'message': response_message,
                 'products': products,
-                'type': 'products',
+                'type': message_type,
                 'quiz_url': None
             })
 
@@ -184,6 +202,7 @@ def chat_send(request):
             season = last_params.get('season', 'лето')
 
             # Получаем исключённые SKU
+            exclude_skus = request.session.get('shown_skus', [])
             exclude_skus = request.session.get('shown_skus', [])
 
             # Слегка меняем стиль для разнообразия
@@ -218,10 +237,29 @@ def chat_send(request):
 
                 # Сохраняем новые параметры
                 request.session['last_response_params'] = new_params
+                response_message = f'Вот другой вариант образа в стиле {new_style}:'
+                message_type = 'outfit'
+
+                # ========== СОХРАНЯЕМ СООБЩЕНИЕ ==========
+                ChatMessage.objects.create(
+                    session=session,
+                    role='assistant',
+                    content=response_message,
+                    products_data=products if products else None,
+                    message_type=message_type
+                )
+                # ========================================
                 return JsonResponse({
-                    'message': f'Вот другой вариант образа в стиле {new_style}:',
+                    'message': response_message,
                     'products': products,
-                    'type': 'outfit',
+                    'type': message_type,
+                    'quiz_url': None
+                })
+            else:
+                return JsonResponse({
+                    'message': 'Не удалось собрать образ. Попробуйте другой запрос.',
+                    'products': [],
+                    'type': 'text',
                     'quiz_url': None
                 })
 
@@ -238,6 +276,7 @@ def chat_send(request):
         'kibbe_type': session.kibbe_type,
     }
 
+    print("🚀 Отправка в GigaChat:", user_message)
     result = giga_service.process_message(
         user_message=user_message,
         session=session,
@@ -248,7 +287,15 @@ def chat_send(request):
     # Формируем ответ
     if result['type'] == 'products':
         answer_text = result.get('message', 'Вот что я нашёл:')
-        products = result['data'].get('items', [])
+        # ========== УНИВЕРСАЛЬНЫЙ ПОИСК products ==========
+        products_data = result['data'].get('products', []) or result['data'].get('items', [])
+        # Если products_data — это список объектов с полем products (как в look)
+        if products_data and isinstance(products_data, list) and len(products_data) > 0 and 'products' in products_data[
+            0]:
+            products = products_data[0]['products']  # берём первый образ
+        else:
+            products = products_data
+        # =================================================
         message_type = 'products'
         request.session['last_response_type'] = 'products'
         request.session['last_response_params'] = {
@@ -268,7 +315,16 @@ def chat_send(request):
 
     elif result['type'] == 'outfit':
         answer_text = result.get('message', 'Вот ваш образ:')
-        products = list(result['data'].get('outfit', {}).values())
+        # ========== УНИВЕРСАЛЬНЫЙ ПАРСИНГ outfit ==========
+        # products = list(result['data'].get('outfit', {}).values())
+
+        # Если data содержит outfit, преобразуем в список:
+        outfit_data = result['data'].get('outfit', {})
+        if isinstance(outfit_data, dict):
+            products = list(outfit_data.values())
+        else:
+            products = outfit_data if isinstance(outfit_data, list) else []
+        # =================================================
         message_type = 'outfit'
         request.session['last_response_type'] = 'outfit'
         request.session['last_response_params'] = {

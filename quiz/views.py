@@ -1,9 +1,7 @@
-# quiz/views.py
-
 from django.shortcuts import render, redirect, get_object_or_404
-from django.urls import reverse
 from django.contrib import messages
 from .models import Question, AnswerOption
+from django.urls import reverse
 from chat.models import ChatSession
 
 
@@ -118,10 +116,10 @@ def quiz_result(request):
     request.session['quiz_products'] = quiz_products
 
     # Перенаправляем в чат вместо страницы с результатами
-    request.session['quiz_products'] = quiz_products
+    # request.session['quiz_products'] = quiz_products
     request.session['quiz_completed'] = True
 
-    # ========== ВСТАВИТЬ СЮДА ==========
+    # ========== СОХРАНЯЕМ В БАЗУ ========
     from chat.models import ChatSession
     session_id = request.session.get('chat_session_id')
     if session_id:
@@ -130,6 +128,7 @@ def quiz_result(request):
             chat_session.figure_type = figure_type
             chat_session.color_type = color_type
             chat_session.kibbe_type = kibbe_type
+            chat_session.quiz_products = quiz_products
             chat_session.save()
     # ===================================
 

@@ -18,6 +18,9 @@ class ChatSession(models.Model):
 
     # НОВОЕ ПОЛЕ — для контекста в GigaChat
     gigachat_thread_id = models.CharField(max_length=255, blank=True, null=True)
+    quiz_products = models.JSONField(null=True, blank=True)
+    quiz_shown = models.BooleanField(default=False)
+
 
 class ChatMessage(models.Model):
     session = models.ForeignKey(ChatSession, on_delete=models.CASCADE, related_name='messages')

@@ -186,10 +186,10 @@
 
         /* Карточки товаров */
         .products-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);  /* 2 колонки равной ширины */
-            gap: 24px;
-            margin-top: 16px;
+            display: grid !important;
+            grid-template-columns: repeat(2, 1fr) !important;  /* 2 колонки равной ширины */
+            gap: 24px !important;
+            margin-top: 16px !important;
         }
 
         /* Карточка товара */
@@ -333,10 +333,10 @@
 
         /* addOutfitMessage */
         .outfit-products-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 16px;
-            margin-top: 12px;
+            display: grid !important;
+            grid-template-columns: repeat(2, 1fr) !important;
+            gap: 16px !important;
+            margin-top: 12px !important;
         }
 
         .outfit-product-card {
@@ -515,6 +515,15 @@
 <!--                html += '</div>';-->
             }
             messageDiv.innerHTML = html;
+            setTimeout(() => {
+                const grids = messageDiv.querySelectorAll('.products-grid');
+                for (const grid of grids) {
+                    grid.style.display = 'grid';
+                    grid.style.gridTemplateColumns = 'repeat(2, 1fr)';
+                    grid.style.gap = '24px';
+                }
+            }, 10);
+
         }
 
         messagesArea.appendChild(messageDiv);
@@ -718,9 +727,20 @@
         if (!products || products.length === 0) return '';
 
         let html = '<div class="products-grid">';
-
         for (const p of products) html += createProductCard(p);
         html += '</div>';
+
+        // ========== ПРИНУДИТЕЛЬНОЕ ПРИМЕНЕНИЕ СТИЛЕЙ ==========
+        setTimeout(() => {
+            const grids = document.querySelectorAll('.products-grid');
+            for (const grid of grids) {
+                grid.style.display = 'grid';
+                grid.style.gridTemplateColumns = 'repeat(2, 1fr)';
+                grid.style.gap = '24px';
+            }
+        }, 10);
+        // =====================================================
+
         return html;
     }
 

@@ -3,6 +3,8 @@
 import os
 import sys
 
+sys.stdout.reconfigure(line_buffering=True)
+
 
 def main():
     """Run administrative tasks."""
