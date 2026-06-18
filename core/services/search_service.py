@@ -143,7 +143,6 @@ class SearchService:
             })
         return items
 
-
 # class SearchService:
 #     def test_search(self):
 #         results = self.hybrid_search("джинсы", top_k=5)
