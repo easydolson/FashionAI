@@ -19,11 +19,13 @@ from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
 import accounts.views as accounts_views
+from chat.views import chat_page
 
 urlpatterns = [
-                path('accounts/', include('accounts.urls')),
+                  path('accounts/', include('accounts.urls')),
                   path('admin/', admin.site.urls),
-                  path('', include('quiz.urls')),
+                  path('', chat_page, name='home'),
+                  path('quiz/', include('quiz.urls')),
                   path('chat/', include('chat.urls')),
                   path('wishlist/', include('wishlist.urls')),
                   path('profile/', accounts_views.profile_page, name='profile_page'),

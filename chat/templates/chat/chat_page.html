@@ -398,6 +398,34 @@
 </head>
 <body>
 
+<!-- ===== КНОПКИ ВВЕРХУ СПРАВА ===== -->
+<div style="position: fixed; top: 16px; right: 20px; z-index: 100; display: flex; gap: 14px; align-items: center;">
+    <a href="{% url 'wishlist:wishlist_page' %}"
+       style="background: #432E23; color: white; padding: 10px 20px; border-radius: 30px; text-decoration: none; font-size: 1rem; font-weight: 500;">
+        ❤️ Избранное
+    </a>
+    {% if user.is_authenticated %}
+        <a href="{% url 'profile_page' %}"
+           style="background: #432E23; color: white; padding: 10px 20px; border-radius: 30px; text-decoration: none; font-size: 1rem; font-weight: 500;">
+            👤 {{ user.username }}
+        </a>
+        <a href="{% url 'logout' %}"
+           style="background: #e0e0e0; color: #333; padding: 10px 20px; border-radius: 30px; text-decoration: none; font-size: 1rem; font-weight: 500;">
+            Выйти
+        </a>
+    {% else %}
+        <a href="{% url 'login' %}"
+           style="background: #432E23; color: white; padding: 10px 20px; border-radius: 30px; text-decoration: none; font-size: 1rem; font-weight: 500;">
+            Войти
+        </a>
+        <a href="{% url 'register' %}"
+           style="background: #E5D8C4; color: #432E23; padding: 10px 20px; border-radius: 30px; text-decoration: none; font-size: 1rem; font-weight: 500;">
+            Регистрация
+        </a>
+    {% endif %}
+</div>
+<!-- ===== КНОПКИ ВВЕРХУ СПРАВА КОНЕЦ ===== -->
+
 <div class="chat-fullscreen">
     <!-- Центрированная плашка ввода -->
     <div class="welcome-screen" id="welcome-screen">
@@ -707,7 +735,9 @@
             messagesArea.scrollTop = messagesArea.scrollHeight;
             if (messageInput) messageInput.focus();
         }
-        loadWishlistStatus();
+        {% if user.is_authenticated %}
+            loadWishlistStatus();
+        {% endif %}
     });
 
 
