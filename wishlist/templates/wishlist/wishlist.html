@@ -1,43 +1,252 @@
-{% extends 'base.html' %}
+{% load static %}
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Мои избранные | DAISYKNIT</title>
+    <style>
+        /* ===== ПОЛНОСТЬЮ СТИЛИ ИЗ CHAT_PAGE.HTML ===== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            margin: 0;
+            padding: 0;
+            background: #FFFFFF;
+            font-family: 'Montserrat', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            overflow: hidden;
+            height: 100vh;
+        }
+        nav, footer { display: none !important; }
 
-{% block content %}
-<div class="container">
-    <h1>Избранные товары</h1>
-    {% if wishlist_items %}
-        <div class="products-grid">
-            {% for item in wishlist_items %}
-                <div class="product-card" data-product-id="{{ item.product.id }}">
-                    <img src="{{ item.product.image_url }}" alt="{{ item.product.name }}">
-                    <h3>{{ item.product.name }}</h3>
-                    <p>{{ item.product.price }} ₽</p>
-                    <button class="remove-from-wishlist" data-product-id="{{ item.product.id }}">Удалить</button>
-                </div>
-            {% endfor %}
-        </div>
+        .chat-fullscreen {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            width: 100%;
+            background: #FFFFFF;
+            position: relative;
+        }
+
+        /* ===== КНОПКИ ВВЕРХУ (как в чате) ===== */
+        .top-nav {
+            position: fixed;
+            top: 16px;
+            right: 20px;
+            z-index: 100;
+            display: flex;
+            gap: 14px;
+            align-items: center;
+        }
+        .top-nav a {
+            padding: 10px 20px;
+            border-radius: 30px;
+            text-decoration: none;
+            font-size: 1rem;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        .top-nav .btn-dark { background: #432E23; color: white; }
+        .top-nav .btn-dark:hover { background: #5A3C2D; }
+        .top-nav .btn-light { background: #E5D8C4; color: #432E23; }
+        .top-nav .btn-light:hover { background: #d4c4ab; }
+        .top-nav .btn-gray { background: #e0e0e0; color: #333; }
+        .top-nav .btn-gray:hover { background: #ccc; }
+
+        /* ===== КОНТЕЙНЕР СПИСКА ===== */
+        .wishlist-container {
+            max-width: 1100px;
+            margin: 80px auto 20px;
+            width: 100%;
+            padding: 0 20px;
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .wishlist-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 0 10px;
+            border-bottom: 1px solid #E5E5E5;
+            margin-bottom: 20px;
+        }
+        .wishlist-header h1 {
+            font-weight: 400;
+            color: #432E23;
+            font-size: 1.8rem;
+        }
+        .wishlist-header .count {
+            color: #999;
+            font-size: 0.9rem;
+        }
+
+        /* ===== КАРТОЧКИ (как в чате) ===== */
+        .products-grid {
+            display: grid !important;
+            grid-template-columns: repeat(3, 1fr) !important;
+            gap: 16px !important;
+            margin-top: 12px !important;
+        }
+
+        .product-card-chat {
+            display: block;
+            text-decoration: none;
+            background: white;
+            border: 1px solid #E5E5E5;
+            border-radius: 16px;
+            padding: 12px;
+            transition: transform 0.2s;
+            text-align: center;
+        }
+        .product-card-chat:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+        }
+        .product-card-chat img {
+            width: 100%;
+            aspect-ratio: 1 / 1;
+            object-fit: cover;
+            border-radius: 10px;
+            margin-bottom: 6px;
+        }
+        .product-card-chat .product-name {
+            display: block;
+            font-size: 0.8rem;
+            font-weight: 500;
+            margin: 4px 0 2px;
+            color: #2C2C2C;
+            text-align: center;
+        }
+        .product-card-chat .product-price {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #432E23;
+            text-align: center;
+        }
+        .remove-btn {
+            display: inline-block;
+            margin-top: 6px;
+            padding: 4px 14px;
+            background: #f0f0f0;
+            color: #333;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            text-decoration: none;
+            transition: 0.2s;
+        }
+        .remove-btn:hover {
+            background: #ff6b6b;
+            color: white;
+        }
+
+        .empty-message {
+            text-align: center;
+            color: #999;
+            padding: 60px 0;
+        }
+        .empty-message .big-icon { font-size: 3rem; display: block; margin-bottom: 16px; }
+
+        /* ===== КНОПКА В ЧАТ (как в чате) ===== */
+        .btn-chat {
+            display: inline-block;
+            background: #432E23;
+            color: white;
+            padding: 16px 48px;
+            border-radius: 60px;
+            text-decoration: none;
+            font-size: 1.1rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 16px rgba(67, 46, 35, 0.3);
+            margin: 20px 0;
+        }
+        .btn-chat:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 24px rgba(67, 46, 35, 0.4);
+        }
+
+        /* ===== АДАПТИВ ===== */
+        @media (max-width: 768px) {
+            .products-grid { grid-template-columns: repeat(2, 1fr) !important; }
+            .top-nav { gap: 8px; }
+            .top-nav a { padding: 6px 12px; font-size: 0.75rem; }
+        }
+        @media (max-width: 480px) {
+            .products-grid { grid-template-columns: 1fr 1fr !important; }
+            .wishlist-header h1 { font-size: 1.4rem; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- ===== НАВИГАЦИЯ (КАК В ЧАТЕ) ===== -->
+<div class="top-nav">
+    <a href="{% url 'wishlist:wishlist_page' %}" class="btn-dark">❤️ Избранное</a>
+    {% if user.is_authenticated %}
+        <a href="{% url 'profile_page' %}" class="btn-dark">👤 {{ user.username }}</a>
+        <a href="{% url 'logout' %}" class="btn-gray">Выйти</a>
     {% else %}
-        <p>У вас пока нет избранных товаров.</p>
+        <a href="{% url 'login' %}" class="btn-dark">Войти</a>
+        <a href="{% url 'register' %}" class="btn-light">Регистрация</a>
     {% endif %}
 </div>
 
+<!-- ===== ОСНОВНОЙ КОНТЕНТ ===== -->
+<div class="chat-fullscreen">
+    <div class="wishlist-container">
+        <div class="wishlist-header">
+            <h1>❤️ Мои избранные</h1>
+            <span class="count">{{ wishlist_items|length }} товаров</span>
+        </div>
+
+        {% if wishlist_items %}
+        <div class="products-grid">
+            {% for item in wishlist_items %}
+            <div class="product-card-chat">
+                {% if item.product %}
+                <a href="{{ item.product.url }}" target="_blank">
+<!--                    <img src="/media/first_images/{{ item.product.image_filename }}" ...>-->
+                    <img src="/media/first_images/{{ item.product.image_filename }}" alt="{{ item.product.name }}">
+                    <span class="product-name">{{ item.product.name }}</span>
+                    <span class="product-price">{{ item.product.price }} ₽</span>
+                </a>
+                <a href="{% url 'wishlist:remove_from_wishlist' item.id %}" class="remove-btn">✕ Удалить</a>
+                {% elif item.look %}
+                <div>
+                    <h3 style="font-size: 0.9rem; margin: 4px 0;">Образ #{{ item.look.id }}</h3>
+                    <p style="color: #666; font-size: 0.75rem;">{{ item.look.suitable_figure|default:"Все типы" }}</p>
+                    <a href="{% url 'wishlist:remove_from_wishlist' item.id %}" class="remove-btn">✕ Удалить</a>
+                </div>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-message">
+            <span class="big-icon">💔</span>
+            <p>У вас пока нет избранных товаров или образов.</p>
+            <p style="font-size: 0.9rem;">Пройдите опросник или пообщайтесь с ИИ-стилистом, чтобы найти идеи!</p>
+        </div>
+        {% endif %}
+
+        <div style="text-align: center;">
+            <a href="{% url 'home' %}" class="btn-chat">💬 Перейти в чат</a>
+        </div>
+    </div>
+</div>
+
+</body>
+
 <script>
-    document.querySelectorAll('.remove-from-wishlist').forEach(btn => {
-        btn.addEventListener('click', function() {
-            const productId = this.dataset.productId;
-            fetch('{% url "toggle_wishlist" %}', {
-                method: 'POST',
-                headers: {
-                    'X-CSRFToken': '{{ csrf_token }}',
-                    'X-Requested-With': 'XMLHttpRequest'
-                },
-                body: new URLSearchParams({ product_id: productId })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (!data.is_in_wishlist) {
-                    this.closest('.product-card').remove();
-                }
-            });
-        });
-    });
+    function getImageUrl(imageFilename) {
+        if (!imageFilename) return '';
+        if (imageFilename.startsWith('http')) return imageFilename;
+        return `/media/first_images/${imageFilename}`;
+    }
 </script>
-{% endblock %}
+</html>

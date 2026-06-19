@@ -163,8 +163,8 @@
             min-width: 200px;
             padding: 0.8rem 1.2rem;
             border-radius: 18px;
-            line-height: 1.4;
-            font-size: 0.9rem;
+            line-height: 1.6;        /* ← увеличить межстрочный интервал */
+            font-size: 1rem;         /* ← увеличить размер шрифта */
         }
 
         .message.user {
@@ -177,74 +177,63 @@
         .message.assistant {
             align-self: flex-start;
             background: #F5F5F5;
-            color: var(--text-dark);
+            color: #1a1a1a;
             border-bottom-left-radius: 4px;
         }
 
         /* ========== ГЛАВНОЕ: СЕТКА ТОВАРОВ ========== */
 
         /* Карточки товаров */
+/* ========== КОМПАКТНЫЕ КАРТОЧКИ ========== */
         .products-grid {
             display: grid !important;
-            grid-template-columns: repeat(2, 1fr) !important;  /* 2 колонки равной ширины */
-            gap: 24px !important;
-            margin-top: 16px !important;
+            grid-template-columns: repeat(2, 1fr) !important;  /* 2 колонки */
+            gap: 12px !important;  /* ← уменьшенный отступ между карточками */
+            margin-top: 12px !important;
         }
 
-        /* Карточка товара */
         .product-card-chat {
             display: block;
             text-decoration: none;
             background: white;
             border: 1px solid #E5E5E5;
-            border-radius: 20px;
-            padding: 20px;
+            border-radius: 12px;  /* ← меньше скругление */
+            padding: 10px;  /* ← уменьшенные внутренние отступы */
             transition: transform 0.2s;
         }
 
         .product-card-chat:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            transform: translateY(-2px);
+            box-shadow: 0 3px 10px rgba(0,0,0,0.08);
         }
 
         .product-card-chat img {
-            width: 100%;
+            width: 80%;
             aspect-ratio: 1 / 1;
             object-fit: cover;
-            border-radius: 16px;
-            margin-bottom: 16px;
+            border-radius: 6px;
+            margin: 0 auto 4px;  /* ← центрируем */
+            display: block;
         }
 
         .product-card-chat .product-name {
             display: block;
-            font-size: 0.9rem;
+            font-size: 0.75rem;  /* ← мелкий шрифт */
             font-weight: 500;
-            margin: 8px 0 4px;
+            margin: 4px 0 2px;
             color: #2C2C2C;
             text-align: center;
+            line-height: 1.2;
         }
 
         .product-card-chat .product-price {
             display: block;
-            font-size: 0.95rem;
+            font-size: 0.8rem;  /* ← мелкий шрифт */
             font-weight: 600;
             color: #432E23;
             text-align: center;
         }
 
-        .product-card-wrapper {
-            position: relative;
-        }
-
-        .product-card-wrapper .wishlist-btn {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            z-index: 10;
-        }
-        .product-card-wrapper:hover .wishlist-btn {
-            opacity: 1 !important;
-        }
 
         /* Индикатор печати */
         .typing-indicator {
@@ -384,6 +373,28 @@
             margin-top: 4px;
         }
 
+        .product-card-wrapper .wishlist-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            z-index: 10;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border: none;
+            background: rgba(255, 255, 255, 0.9);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            font-size: 18px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #333;
+        }
+        .product-card-wrapper:hover .wishlist-btn {
+            opacity: 1 !important;
+        }
         .wishlist-btn:hover {
             background: #ff6b6b !important;
             color: white !important;
@@ -405,23 +416,23 @@
         ❤️ Избранное
     </a>
     {% if user.is_authenticated %}
-        <a href="{% url 'profile_page' %}"
-           style="background: #432E23; color: white; padding: 10px 20px; border-radius: 30px; text-decoration: none; font-size: 1rem; font-weight: 500;">
-            👤 {{ user.username }}
-        </a>
-        <a href="{% url 'logout' %}"
-           style="background: #e0e0e0; color: #333; padding: 10px 20px; border-radius: 30px; text-decoration: none; font-size: 1rem; font-weight: 500;">
-            Выйти
-        </a>
+    <a href="{% url 'profile_page' %}"
+       style="background: #432E23; color: white; padding: 10px 20px; border-radius: 30px; text-decoration: none; font-size: 1rem; font-weight: 500;">
+        👤 {{ user.username }}
+    </a>
+    <a href="{% url 'logout' %}"
+       style="background: #e0e0e0; color: #333; padding: 10px 20px; border-radius: 30px; text-decoration: none; font-size: 1rem; font-weight: 500;">
+        Выйти
+    </a>
     {% else %}
-        <a href="{% url 'login' %}"
-           style="background: #432E23; color: white; padding: 10px 20px; border-radius: 30px; text-decoration: none; font-size: 1rem; font-weight: 500;">
-            Войти
-        </a>
-        <a href="{% url 'register' %}"
-           style="background: #E5D8C4; color: #432E23; padding: 10px 20px; border-radius: 30px; text-decoration: none; font-size: 1rem; font-weight: 500;">
-            Регистрация
-        </a>
+    <a href="{% url 'login' %}"
+       style="background: #432E23; color: white; padding: 10px 20px; border-radius: 30px; text-decoration: none; font-size: 1rem; font-weight: 500;">
+        Войти
+    </a>
+    <a href="{% url 'register' %}"
+       style="background: #E5D8C4; color: #432E23; padding: 10px 20px; border-radius: 30px; text-decoration: none; font-size: 1rem; font-weight: 500;">
+        Регистрация
+    </a>
     {% endif %}
 </div>
 <!-- ===== КНОПКИ ВВЕРХУ СПРАВА КОНЕЦ ===== -->
@@ -794,33 +805,15 @@
     }
 
 
-<!--    function createProductCard(product) {-->
-<!--        const imageUrl = getImageUrl(product.image_filename);-->
-<!--        return `-->
-<!--            <div class="product-card-wrapper" style="position: relative;">-->
-<!--                <button onclick="addToWishlist('${product.sku}', this)"-->
-<!--                        class="wishlist-btn"-->
-<!--                        style="position: absolute; top: 10px; right: 10px; z-index: 10; background: rgba(255,255,255,0.9); border: none; border-radius: 50%; width: 36px; height: 36px; font-size: 18px; cursor: pointer; transition: 0.2s; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">-->
-<!--                    ♡-->
-<!--                </button>-->
-<!--                <a href="${product.url || '#'}" class="product-card-chat" target="_blank">-->
-<!--                    ${imageUrl ? `<img src="${imageUrl}" alt="${product.name}">` : ''}-->
-<!--                    <span class="product-name">${product.name}</span>-->
-<!--                    <span class="product-price">${formatPrice(product.price)}</span>-->
-<!--                </a>-->
-<!--            </div>-->
-<!--        `;-->
-<!--    }-->
-<!--    -->
-
     function createProductCard(product) {
+        console.log('product:', product);
         const imageUrl = getImageUrl(product.image_filename);
         return `
             <div class="product-card-wrapper" style="position: relative;">
                 <button data-sku="${product.sku}"
-                        onclick="addToWishlist('${product.sku}', this)"
+                        onclick="addToWishlist(${product.sku}, this)"
                         class="wishlist-btn"
-                        style="position: absolute; top: 10px; right: 10px; z-index: 10; background: rgba(255,255,255,0.9); border: none; border-radius: 50%; width: 36px; height: 36px; font-size: 18px; cursor: pointer; transition: 0.2s; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                        style=position: absolute; top: 10px; right: 10px; z-index: 10; background: rgba(255,255,255,0.9); border: none; border-radius: 50%; width: 36px; height: 36px; font-size: 18px; cursor: pointer; transition: 0.2s; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
                     ♡
                 </button>
                 <a href="${product.url || '#'}" class="product-card-chat" target="_blank">
