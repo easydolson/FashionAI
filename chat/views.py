@@ -50,7 +50,7 @@ def chat_page(request):
     # quiz_products = request.session.pop('quiz_products', None)
     quiz_products = session.quiz_products
     # Добавляем флаг, что образы уже показаны
-    if quiz_products and not session.quiz_shown:
+    if quiz_products: # and not session.quiz_shown:
         # Сообщение с образами
         ChatMessage.objects.create(
             session=session,

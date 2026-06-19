@@ -131,6 +131,7 @@ def quiz_result(request):
             chat_session.quiz_products = quiz_products
             chat_session.quiz_shown = False  # ← СБРАСЫВАЕМ ФЛАГ, ЧТОБЫ ПОКАЗАЛОСЬ
             chat_session.save()
+            print(f"📦 quiz_products: {quiz_products}")  # временно для отладки
     # ===================================
 
     return redirect('chat_page')
