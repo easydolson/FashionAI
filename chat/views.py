@@ -48,10 +48,37 @@ def chat_page(request):
 
     # ========== Проверка новых образов ==========
     # quiz_products = request.session.pop('quiz_products', None)
+
+
+    # quiz_products = session.quiz_products
+    # # Добавляем флаг, что образы уже показаны
+    # if quiz_products: # and not session.quiz_shown:
+    #     # Сообщение с образами
+    #     ChatMessage.objects.create(
+    #         session=session,
+    #         role='assistant',
+    #         content='🎉 Отлично! Я подобрал для вас товары, идеально подходящие под ваши параметры:',
+    #         products_data=quiz_products,
+    #         message_type='look'
+    #     )
+    #
+    #     # Направляющее сообщение
+    #     ChatMessage.objects.create(
+    #         session=session,
+    #         role='assistant',
+    #         content='Вот образы, которые вам подходят. Какой понравился больше?\n\nМогу дополнить его аксессуарами или найти похожие модели.',
+    #         products_data=None,
+    #         message_type='text'
+    #     )
+    #
+    #     session.quiz_shown = True  # помечаем, что показали
+    #     session.save()
+
     quiz_products = session.quiz_products
-    # Добавляем флаг, что образы уже показаны
-    if quiz_products: # and not session.quiz_shown:
-        # Сообщение с образами
+    if quiz_products:
+        # Удаляем старые look-сообщения, чтобы не дублировать
+        ChatMessage.objects.filter(session=session, message_type='look').delete()
+
         ChatMessage.objects.create(
             session=session,
             role='assistant',
@@ -59,18 +86,16 @@ def chat_page(request):
             products_data=quiz_products,
             message_type='look'
         )
-
-        # Направляющее сообщение
         ChatMessage.objects.create(
             session=session,
             role='assistant',
-            content='Вот образы, которые вам подходят. Какой понравился больше?\n\nМогу дополнить его аксессуарами или найти похожие модели.',
+            content='Вот образы, которые вам подходят. Какой понравился больше?',
             products_data=None,
             message_type='text'
         )
-
-        session.quiz_shown = True  # помечаем, что показали
+        session.quiz_shown = True
         session.save()
+
 
         messages = session.messages.all().order_by('created_at')
     # ======================================================
